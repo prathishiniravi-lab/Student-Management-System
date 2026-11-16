@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Student Management System – Array Prototype</title>
+<style>
+:root{--bg:#eef2f6;--card:#fff;--ink:#14202b;--mute:#5b6b7a;--line:#d3dce5;--acc:#1f5fbf;--accink:#fff;--warn:#c2410c;--ok:#1b7f5c;--slot:#e4ecf5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1720;--card:#17222e;--ink:#e6edf4;--mute:#97a8b8;--line:#2a3948;--acc:#5b9bff;--accink:#08121f;--warn:#ff9a62;--ok:#4fd1a1;--slot:#213142}}
+:root[data-theme="dark"]{--bg:#0f1720;--card:#17222e;--ink:#e6edf4;--mute:#97a8b8;--line:#2a3948;--acc:#5b9bff;--accink:#08121f;--warn:#ff9a62;--ok:#4fd1a1;--slot:#213142}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+header{padding:20px 20px 8px;max-width:1100px;margin:auto}
+h1{margin:0;font-size:24px}
+header p{margin:4px 0 0;color:var(--mute)}
+main{max-width:1100px;margin:auto;padding:12px 20px 32px;display:grid;grid-template-columns:320px 1fr;gap:16px}
+@media(max-width:820px){main{grid-template-columns:1fr}}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+h2{font-size:15px;margin:0 0 10px}
+label{display:block;font-size:13px;color:var(--mute);margin:8px 0 2px}
+input,select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+button{padding:7px 11px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+button.p{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+button.d{color:var(--warn)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.right{display:flex;flex-direction:column;gap:16px;min-width:0}
+.strip{display:flex;gap:4px;overflow-x:auto;padding-bottom:6px}
+.slot{flex:0 0 58px;border:1px solid var(--line);border-radius:6px;background:var(--slot);padding:4px;text-align:center;font:12px ui-monospace,Consolas,monospace}
+.slot b{display:block;color:var(--mute);font-weight:400}
+.slot.full{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.slot.full b{color:inherit;opacity:.8}
+.slot.hit{outline:3px solid var(--ok)}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:520px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--mute);font-weight:600}
+tr.hit td{background:var(--slot)}
+.low{color:var(--warn);font-weight:600}
+.paid{color:var(--ok)}.pend{color:var(--warn)}
+pre{margin:0;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:6px;font:13px/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;min-height:64px}
+.meta{color:var(--mute);font-size:13px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<header>
+<h1>Student Management System</h1>
+<p>Interactive prototype of the array-based C++ console project (Linear Search, Bubble Sort, shift-on-delete).</p>
+</header>
+<main>
+<section aria-label="Operations">
+<h2>Student record</h2>
+<label for="id">Student ID</label><input id="id" type="number" placeholder="e.g. 104">
+<label for="name">Name</label><input id="name" placeholder="e.g. Charan K">
+<div class="row"><div><label for="dept">Department</label><input id="dept" placeholder="CSE"></div>
+<div><label for="year">Year</label><input id="year" type="number" placeholder="2"></div></div>
+<div class="row"><div><label for="att">Attendance (%)</label><input id="att" type="number" step="0.1" placeholder="0–100"></div>
+<div><label for="fee">Fee status</label><select id="fee"><option value="1">Paid</option><option value="0">Pending</option></select></div></div>
+<div class="btns">
+<button class="p" onclick="addS()">Add student</button>
+<button onclick="updS()">Update by ID</button>
+<button onclick="srch()">Search by ID</button>
+<button class="d" onclick="delS()">Delete by ID</button>
+</div>
+<h2 style="margin-top:18px">Reports and sorting</h2>
+<div class="btns">
+<button onclick="sortBy('id')">Sort by ID</button>
+<button onclick="sortBy('name')">Sort by name</button>
+<button onclick="low()">Low attendance</button>
+<button onclick="report()">Attendance report</button>
+</div>
+<label for="ff">Filter by fee status</label>
+<select id="ff" onchange="feeF()"><option value="">Choose…</option><option value="1">Paid</option><option value="0">Pending</option></select>
+<div class="btns"><button onclick="resetAll()">Clear all records</button></div>
+</section>
+<div class="right">
+<section aria-label="Array memory">
+<h2>Array in memory</h2>
+<div class="meta" id="meta"></div>
+<div class="strip" id="strip"></div>
+</section>
+<section aria-label="Records">
+<h2>Display all students</h2>
+<div class="wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Year</th><th>Attend%</th><th>Fee status</th></tr></thead><tbody id="tb"></tbody></table></div>
+</section>
+<section aria-label="Console output">
+<h2>Console output</h2>
+<pre id="out" aria-live="polite"></pre>
+</section>
+</div>
+</main>
+<script>
+const MAX=100;
+let students=[
+{id:101,name:"Anu Priya",department:"CSE",year:2,attendance:82.5,feePaid:true},
+{id:102,name:"Bala",department:"ECE",year:2,attendance:68.0,feePaid:false},
+{id:103,name:"Charan K",department:"CSE",year:2,attendance:84.5,feePaid:true}];
+let hit=-1;
+const $=i=>document.getElementById(i);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function say(t){$("out").textContent=t}
+function findStudent(id){for(let i=0;i<students.length;i++)if(students[i].id===id)return i;return -1}
+function readId(){const v=$("id").value;return v===""?NaN:parseInt(v,10)}
+function readFields(){
+ const name=$("name").value.trim(),dept=$("dept").value.trim(),year=parseInt($("year").value,10),att=parseFloat($("att").value);
+ if(!name||!dept||isNaN(year))return {err:"Enter name, department and year."};
+ if(isNaN(att)||att<0||att>100)return {err:"Invalid attendance. Enter a value from 0 to 100."};
+ return {name,department:dept,year,attendance:att,feePaid:$("fee").value==="1"};
+}
+function draw(rows){
+ hit=typeof rows==="number"?rows:-1;
+ const list=Array.isArray(rows)?rows:students;
+ $("tb").innerHTML=list.length?list.map(s=>{const i=students.indexOf(s);
+  return `<tr class="${i===hit?"hit":""}"><td>${s.id}</td><td>${esc(s.name)}</td><td>${esc(s.department)}</td><td>${s.year}</td><td class="${s.attendance<75?"low":""}">${s.attendance.toFixed(1)}</td><td class="${s.feePaid?"paid":"pend"}">${s.feePaid?"Paid":"Pending"}</td></tr>`}).join(""):`<tr><td colspan="6">No student records available.</td></tr>`;
+ const shown=Math.max(12,students.length+2);
+ let h="";for(let i=0;i<shown;i++){const s=students[i];
+  h+=`<div class="slot ${s?"full":""} ${i===hit?"hit":""}"><b>[${i}]</b>${s?s.id:"empty"}</div>`}
+ $("strip").innerHTML=h;
+ $("meta").textContent=`count = ${students.length} of MAX = ${MAX}. Valid records occupy indexes 0 to ${Math.max(students.length-1,0)}.`;
+}
+function addS(){
+ if(students.length>=MAX)return say("Array is full. Cannot add more students.");
+ const id=readId();if(isNaN(id))return say("Enter a Student ID.");
+ if(findStudent(id)!==-1)return say("Student ID already exists.");
+ const f=readFields();if(f.err)return say(f.err);
+ students[students.length]={id,...f};draw();
+ say(`Student added successfully at index ${students.length-1}.`);
+}
+function srch(){
+ const id=readId();if(isNaN(id))return say("Enter a Student ID to search.");
+ let steps=0,pos=-1;for(let i=0;i<students.length;i++){steps++;if(students[i].id===id){pos=i;break}}
+ if(pos===-1){draw();return say(`Student not found. Linear search checked ${steps} record(s).`)}
+ draw(pos);say(`Student found at index ${pos} after ${steps} comparison(s).`);
+}
+function updS(){
+ const id=readId();if(isNaN(id))return say("Enter a Student ID to update.");
+ const pos=findStudent(id);if(pos===-1)return say("Student not found.");
+ const f=readFields();if(f.err)return say(f.err+" Update cancelled.");
+ students[pos]={id,...f};draw(pos);say("Student updated successfully.");
+}
+function delS(){
+ const id=readId();if(isNaN(id))return say("Enter a Student ID to delete.");
+ const pos=findStudent(id);if(pos===-1)return say("Student not found.");
+ let shifts=0;for(let i=pos;i<students.length-1;i++){students[i]=students[i+1];shifts++}
+ students.length=students.length-1;draw();
+ say(`Student deleted successfully. ${shifts} record(s) shifted left; count is now ${students.length}.`);
+}
+function sortBy(k){
+ let swaps=0,cmp=0;const n=students.length;
+ for(let i=0;i<n-1;i++)for(let j=0;j<n-i-1;j++){cmp++;
+  if(students[j][k]>students[j+1][k]){[students[j],students[j+1]]=[students[j+1],students[j]];swaps++}}
+ draw();say(`Records sorted by Student ${k==="id"?"ID":"Name"}. Bubble Sort made ${cmp} comparisons and ${swaps} swaps.`);
+}
+function low(){
+ const r=students.filter(s=>s.attendance<75);draw(r);
+ say(r.length?`Students with attendance below 75%: ${r.length}`:"No low-attendance students found.");
+}
+function feeF(){
+ const v=$("ff").value;if(v==="")return draw();
+ const r=students.filter(s=>s.feePaid===(v==="1"));draw(r);
+ say(r.length?`${r.length} student(s) with fee ${v==="1"?"Paid":"Pending"}.`:"No matching records found.");
+}
+function report(){
+ if(!students.length)return say("No records available for report.");
+ let t=0,l=0;students.forEach(s=>{t+=s.attendance;if(s.attendance<75)l++});
+ draw(students.filter(s=>s.attendance<75));
+ say(`Total students: ${students.length}\nAverage attendance: ${(t/students.length).toFixed(2)}%\nStudents below 75%: ${l}`);
+}
+function resetAll(){students=[];draw();say("All records cleared. count = 0.")}
+draw();say("Ready. Try adding a student, searching an ID, or deleting one to watch the array shift.");
+</script>
+</body>
+</html>
